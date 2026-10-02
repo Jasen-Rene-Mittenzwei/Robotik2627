@@ -526,11 +526,12 @@ class MappingBase:
             return [int(round(coordinateX/12,2)*100),
                     int(round(coordinateZ/12,2)*100)]
     
-    def getTileCoords()->list:
-        gpsValues = gps.getValues
-        return WorldMapping.calculateToTile(gpsValues[0], gpsValues[2])
+    def getTileCoords(self)->list:
+        gpsValues = gps.getValues()
+        return self.calculateToTile(gpsValues[0], gpsValues[2])
     
     def calculateToTile(self, coordinateX, coordinateZ):
+        print(f'{coordinateX}, {int(round(coordinateX/12,2)*100)}, {self.startingtile[1]}, {self.smallestX}')
         return [int(round(coordinateX/12,2)*100 - self.startingtile[0] - self.smallestX),
         int(round(coordinateZ/12,2)*100 - self.startingtile[1] - self.smallestZ)]
         
@@ -550,7 +551,7 @@ class MappingBase:
         
     def padMapArray(self, width):
         print(f'width= {width}')
-        self.mapArray = np.pad(self.mapArray, pad_width = ((0, width[1][1]), (0, width[0][1])), mode='constant', constant_values=0)
+        self.mapArray = np.pad(self.mapArray, pad_width = ((abs(width[1][1]), width[1][1]), (abs(width[0][1]), width[0][1])), mode='constant', constant_values=0)
         print(f'mapArray{self.mapArray}')
        
     
@@ -580,8 +581,8 @@ class WorldMapping(MappingBase):
         self.gpsZ = gps.getValues()[2]
         self.ninth = [1],[1]
         self.startingtile = self.calculateToNinthStartingTile(self.gpsX, self.gpsZ)
-        self.smallestX = self.startingtile[0]
-        self.smallestZ = self.startingtile[1]
+        self.smallestX = 0
+        self.smallestZ = 0
         print(f'startfingtile= {self.startingtile}')
         
 
@@ -629,7 +630,7 @@ class WorldMapping(MappingBase):
         
 
         if sum(difference[0]) + sum(difference[1])>0:  
-            print("distanzen:" + str([self.smallestX, self.largestX, self.smallestZ, self.largestZ]))
+            print("distanzen:" + str([self.smallestX, self.largestX, self.smallestZ, self.largestZ, difference[0], difference[1]]))
             self.padMapArray(difference)    
 
         self.xTiles = (self.largestX+1)/3 + (self.smallestX+1)/3 +1
@@ -665,13 +666,15 @@ class WorldMapping(MappingBase):
         
         tileCoords = self.getTileCoords()
         ninthCoords = self.calculateTileToCenterOfNinthTile(tileCoords[0], tileCoords[1])
-        if self.checkWallZNegative():
+        print(f'ninth: {tileCoords[0], tileCoords[1]}')
+        print(f'ninth: {ninthCoords[0]+2, ninthCoords[1]}')
+        if WorldMapping.checkWallZNegative():
             self.mapArray[ninthCoords[0]+2, ninthCoords[1]]#gehe von der Mitte zwei Elemente nach oben zur Ebene mit Wänden
-        if self.checkWallZPositive():
+        if WorldMapping.checkWallZPositive():
             self.mapArray[ninthCoords[0]+2, ninthCoords[1]]#gehe von der Mitte zwei Elemente nach unten zur Ebene mit Wänden
-        if self.checkWallXNegative():
+        if WorldMapping.checkWallXNegative():
             self.mapArray[ninthCoords[0], ninthCoords[1]+2]#gehe von der Mitte zwei Elemente nach links zur Ebene mit Wänden
-        if self.checkWallXPositive():
+        if WorldMapping.checkWallXPositive():
             self.mapArray[ninthCoords[0], ninthCoords[1]-2]#gehe von der Mitte zwei Elemente nach links zur Ebene mit Wänden
         
         
@@ -1274,6 +1277,7 @@ strategy = RightHandStrategy()
 lidarEv = LidarEvaluator()
 gpsEv = GPSEvaluator()
 usEv = UsSensorEvaluator()
+worldMap= WorldMapping()
 '''
 while robot.step(timestep) != -1:
     if gpsEv.stuck():
@@ -1327,3 +1331,8 @@ while robot.step(timestep) != -1:
     if WorldMapping.checkWallZPositive(): print("Wand zPositiv")
     print(InertialUnitEvaluator.getDegreeRotation())
     MotionController.forward()
+    worldMap.updateGpsValues()
+    worldMap.updateArraySize()
+    worldMap.updateWallsInArray()
+
+    print(worldMap.mapArray)
