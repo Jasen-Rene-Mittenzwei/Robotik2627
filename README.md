@@ -22,7 +22,7 @@ Sensors: LiDAR, GPS, ultrasonic sensor, cameras, inertial unit, wheel rotation s
 
 ### Mapping
 
-We create the map with a two-dimensional numpy-Array, which is required by the rules. Each element represents a quarter of a 12 cm field.
+We create the map with a two-dimensional numpy-array, which is required by the rules. Each element represents a quarter of a 12 cm field.
 Mapping is an opportunity to multiply our score, as well as collecting data useful for path finding.
 
 ### Driving
