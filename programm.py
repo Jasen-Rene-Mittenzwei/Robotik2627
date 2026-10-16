@@ -312,14 +312,14 @@ class LeftHandStrategy(BaseStrategy): #instanziert aber NICHT WEITER GENUTZT
 
         
         if  LidarEvaluator.checkLeftWall() and self.leftRotation == False:
-            MotionController.ninetyDegreeRotationLeft()
+            MotionController.ninetyDegreeRotation("left")
             self.leftRotation = True
 
         elif LidarEvaluator.checkFrontWall():
-            MotionController.ninetyDegreeRotationRight()
+            MotionController.ninetyDegreeRotation("right")
 
         elif LidarEvaluator.checkRightWall():
-            MotionController.ninetyDegreeRotationLeft()
+            MotionController.ninetyDegreeRotation("left")
             
         else:
             while LidarEvaluator.checkLeftFrontWall() and robot.step(timestep) != -1:#links-vorne
@@ -510,6 +510,27 @@ class MotionController:
         wheel1.setVelocity(0)
         wheel2.setVelocity(0)      
 
+
+    def ninetyDegreeRotation(direction): #AKTUEL
+        startwert = rotationsSensorRechts.getValue() 
+        print("anfang rechtsdrehung")
+
+        i:int = 0
+        while i < 30 and robot.step(timestep) == 0 and rotationsSensorRechts.getValue() < (startwert + math.pi/2 + math.pi/6):
+            if (direction=="right"):
+                MotionController.turnRight()
+            elif (direction=="left"):
+                MotionController.turnLeft()
+            else:
+                print("+++++++++++++++++++++++++++++++++++++++")
+                print("FEHLER-FALSCHER-PARAMETER-DREHE-METHODE")
+                print("+++++++++++++++++++++++++++++++++++++++")
+            delay(20)
+            i+= 1
+            pass
+        robot.step(timestep)
+        MotionController.stop()
+
                 
     def ninetyDegreeRotationRight(): 
         startwert = rotationsSensorRechts.getValue() 
@@ -524,7 +545,7 @@ class MotionController:
         robot.step(timestep)
         MotionController.stop()
 
-    def ninetyDegreeRotationLeft():
+    def ninetyDegreeRotation("left"):
         startwert = rotationsSensorLinks.getValue() 
         print("anfang linksdrehung")
 
@@ -1141,24 +1162,24 @@ while robot.step(timestep) != -1:
         print("Stuck")
         MotionController.backward()
         delay(50)
-        MotionController.ninetyDegreeRotationLeft()
+        MotionController.ninetyDegreeRotation("left")
     
     usEv.updateHole()
     if usEv.holeInFront:
         if usEv.checkHoleInFront():
-            MotionController.ninetyDegreeRotationLeft()
+            MotionController.ninetyDegreeRotation("left")
     
     if ColorSensor.checkHole():
         #behandle Loch als Wand
         MotionController.backward()
         delay(50)
-        MotionController.ninetyDegreeRotationLeft()
+        MotionController.ninetyDegreeRotation("left")
         MotionController.forward()
         
         if gpsEv.stuck():
             MotionController.backward()
             delay(50)
-            MotionController.ninetyDegreeRotationLeft()
+            MotionController.ninetyDegreeRotation("left")
            
         MotionController.forward()
         delay(2000)
@@ -1167,11 +1188,11 @@ while robot.step(timestep) != -1:
     MotionController.forward()
     lidarEv.checkleftRotation()
     if lidarEv.leftRotation == False and lidarEv.checkNoLeftWall():
-        MotionController.ninetyDegreeRotationLeft()
+        MotionController.ninetyDegreeRotation("left")
         lidarEv.leftRotation = True
     elif LidarEvaluator.checkFrontLeftWall():
-        MotionController.ninetyDegreeRotationRight()
+        MotionController.ninetyDegreeRotation("right")
     elif LidarEvaluator.checkFrontRightWall():
-        MotionController.ninetyDegreeRotationLeft()
+        MotionController.ninetyDegreeRotation("left")
     elif LidarEvaluator.checkFrontWall():
-        MotionController.ninetyDegreeRotationLeft()
+        MotionController.ninetyDegreeRotation("left")
